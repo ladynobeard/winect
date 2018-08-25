@@ -1,0 +1,18 @@
+{
+  "name": "winect",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "ladynobeard",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.6.1",
+    "electron": "^2.0.7",
+    "kinect2": "^0.1.6",
+    "os": "^0.1.1",
+    "youtube-player": "^5.5.0"
+  }
+}
