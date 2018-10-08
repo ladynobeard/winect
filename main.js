@@ -36,7 +36,8 @@ function createWindow() {
         slashes: true,
         autoHideMenuBar: true,
     }))
-    mainWindow.maximize();
+	mainWindow.setFullScreen(true) 
+	//mainWindow.setMenu(null);
     // Open the DevTools on start
     //ainWindow.webContents.openDevTools("undock");
 

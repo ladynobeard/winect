@@ -1,16 +1,16 @@
-
-// 2. This code loads the IFrame Player API code asynchronously.
+// This code loads the IFrame Player API code asynchronously.
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-// 3. This function creates an <iframe> (and YouTube player)
-//    after the API code downloads.
+var videoLink = 'xGRjCa49C6U';
+var videoPos = 5;
+var videoLinkNum = 0;
+// This function creates an <iframe> (and YouTube player)
+// after the API code downloads.
 var player;
-
-var playerHeight = window.innerHeight*3;
-var playerWidth = window.innerWidth*3;
+var playerHeight = 1800;
+var playerWidth = 3200;
 
 var os = require('os');
 var Kinect2 = require('kinect2');
@@ -27,42 +27,39 @@ var X = 0.0;
 var Y = 0.0;
 var Z = 0.0;
 var sizeP = 2;
+var scaleZ =0.8;
+var scalePow = 1.2;
 var startSec = 30;
+var handPos = [];
 
+// Setup AWS IoT
+const myWindow = require('./myWindow')
+var self = this
+		
 // Key Tracking needs cleanup
 var trackedBodyIndex = -1;
 window.addEventListener('load', init);
 
 function init() {
-  //canvas = document.getElementById('inputCanvas');
-  //context = canvas.getContext('2d');
-  //setImageData();
+  window.scrollTo($(window).width()/2, $(window).height()/2);
   chooseCamera();
-}
-
-function setup() {
-	//window.scrollTo((playerWidth-windowWidth)/2,(playerHeight-windowHeight)/2);
-}
-
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight)
-}
-
-function draw() {
+  myWindow.setup();
 }
 
 function updateWindowScroll(X,Y,Z)
 {
-	//document.body.style.zoom=1+Z;
-	//window.scrollTo((playerWidth-windowWidth)/2 + X*100,(playerHeight-windowHeight)/2 - Y*100);
-//console.log(Z*2);
-  //document.body.style.transform="scale("+String(Z)+","+String(Z)+")";//" translate("+String(X*100)+"px,"+String(Y*100)+"px)";
+	var rect = document.getElementById("player").getBoundingClientRect();
+	if(((rect.top + Math.abs(2*Y*100*1/(Z*Math.pow(scaleZ,scalePow))))*((1/(Z*Math.pow(scaleZ,scalePow)))) < -15) && ((rect.bottom + Math.abs(2*Y*100*1/(Z*Math.pow(scaleZ,scalePow)))) < playerHeight+15))
+	{
+		window.scrollTo((playerWidth-$(window).width())/2 + X*100*1/(Z*Math.pow(scaleZ,scalePow)),(playerHeight-$(window).height())/2 - Y*100*1/(Z*Math.pow(scaleZ,scalePow)));
+		document.getElementById("player").style.transform="scale("+String(1/(Z*Math.pow(scaleZ,scalePow)))+")";
+	}
 }
 
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
-    //height: 100,//String(playerHeight),
-    //width: ,//String(playerWidth),
+    height: String(playerHeight),
+    width: String(playerWidth),
 
 	 playerVars: {
             'controls': 0,
@@ -77,10 +74,34 @@ function onYouTubeIframeAPIReady() {
   });
 }
 
+// Listener for IoT event
+myWindow.onMessage(function(topic, payload) {
+      if (topic === myWindow.TOPIC_TEXT) {
+		console.log("HERE: "+payload);
+		var payloadArray = payload.split(" ");
+		var i = 0;
+		var j = 0;
+	    for(i = 0; i < payloadArray.length; i++)
+		{
+			for(j = 0; j < videos.length; j++)
+			{
+				if(videos[j].label.includes(payloadArray[i]))
+				{
+					videoLinkNum = Math.floor(Math.random() * videos[j].links.length);
+					videosPos = videos[j].pos;
+					videoLink = videos[j].links[videoLinkNum];
+					videoLoadandPlay();
+					break;
+				}
+			}
+		}
+      } 
+});
+
 // 4. The API will call this function when the video player is ready.
 function onPlayerReady(event) {
-	player.loadVideoById({'videoId': 'xGRjCa49C6U',
-							 'suggestedQuality': 'large',
+	player.loadVideoById({'videoId': videoLink,
+							 'suggestedQuality': 'highres',
 				 		 	 'startSeconds': startSec,
 				 });
   event.target.setPlaybackQuality('highres');
@@ -93,6 +114,17 @@ function onPlayerStateChange(event) {
     }
 }
 
+function videoLoadandPlay(){
+	$('#player').fadeOut(1000,function(){					
+		player.loadVideoById({'videoId': videoLink,
+			 'suggestedQuality': 'highres',
+			 'startSeconds': startSec,
+					 });
+		
+		player.playVideo();						
+		$('#player').fadeIn(1000);
+	});
+}
 ////////////////////////////////////////////////////////////////////////
 //////////////////////////// Feed Choice //////////////////////////////
 function chooseCamera() {
@@ -139,8 +171,7 @@ function startSkeletonTracking() {
       //skeletonContext.clearRect(0, 0, skeletonCanvas.width, skeletonCanvas.height);
       var index = 0;
       bodyFrame.bodies.forEach(function(body){
-        if(body.tracked && (index = getClosestBodyIndex(bodyFrame.bodies))) {
-          //console.log("???:"+index+"?????"+getClosestBodyIndex(bodyFrame.bodies));
+        if(body.tracked && (index == getClosestBodyIndex(bodyFrame.bodies))) {
           drawSkeleton(body, index);
         }
         index++;
@@ -203,51 +234,86 @@ function drawSkeleton(body, index) {
   // Skeleton variables
   var colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#00ffff', '#ff00ff'];
   //draw joints
-  //for(var jointType in body.joints) {
   var jointType = 3;
   var joint = body.joints[jointType];
-  //inContext.fillRect(joint.depthX * inCanvas.width, joint.depthY * inCanvas.height, 20, 20);
-  //console.log("X:"+parseInt(joint.cameraX*100)/100+" ,Y:"+parseInt(joint.cameraY*100)/100+" ,Z:"+parseInt(joint.cameraZ*100)/100)
-  X = Math.round(parseInt(joint.cameraX*100000))/100000;
-  Y = Math.round(parseInt(joint.cameraY*100000))/100000;
-  Z = Math.round(parseInt(joint.cameraZ*100000))/100000;
+  //console.log("X:"+parseInt(joint.cameraX*1000000)/1000000+" ,Y:"+parseInt(joint.cameraY*1000000)/1000000+" ,Z:"+parseInt(joint.cameraZ*1000000)/1000000)
+  X = Math.round(parseInt(joint.cameraX*1000000))/1000000;
+  Y = Math.round(parseInt(joint.cameraY*1000000))/1000000;
+  Z = Math.round(parseInt(joint.cameraZ*1000000))/1000000;
+  
+  updateHandState(X, body.rightHandState, body.joints[Kinect2.JointType.handRight]);
   updateWindowScroll(X,Y,Z);
-
-  //draw hand states
-  //updateHandState(inContext, body.leftHandState, body.joints[Kinect2.JointType.handLeft]);
-  //updateHandState(inContext, body.rightHandState, body.joints[Kinect2.JointType.handRight]);
 }
 
-function updateHandState(context, handState, jointPoint) {
-  var HANDCLOSEDCOLOR = 'red';
-  var HANDOPENCOLOR = 'green';
-  var HANDLASSOCOLOR = 'blue';
-
-  switch (handState) {
-    case Kinect2.HandState.closed:
-      drawHand(context, jointPoint, HANDCLOSEDCOLOR);
-    break;
-
-    case Kinect2.HandState.open:
-      drawHand(context, jointPoint, HANDOPENCOLOR);
-    break;
-
-    case Kinect2.HandState.lasso:
-      drawHand(context, jointPoint, HANDLASSOCOLOR);
-    break;
+function updateHandState(headJoint, handState, jointPoint) {
+  if (handState == Kinect2.HandState.open) {
+	  handPos.push(Math.round(parseInt(jointPoint.cameraX*1000000))/1000000);
+	  if(handPos.length > 1)
+	  {
+		//console.log(headJoint);
+		var i;
+		var j = 0;
+		for (i = 0; i < handPos.length - 1; i++) { 
+			switch(checkConsist(headJoint, handPos[i], handPos[i+1])){
+				case 1:	
+					
+					//videoLink = "CUaybv1jdHw";
+					console.log("swipe right");					
+					if(videoLinkNum ==  (videos[videoPos].links.length-1))
+					{
+						videoLinkNum = 0;
+					}	
+					else
+					{
+						videoLinkNum = videoLinkNum + 1;
+						
+					}	
+					videoLink = videos[videoPos].links[videoLinkNum];
+					videoLoadandPlay();
+					handPos = [];
+					break;
+				case -1:
+					console.log("swipe left");	
+					if(videoLinkNum == 0)
+					{
+						videoLinkNum = videos[videoPos].links.length-1;
+					}	
+					else
+					{
+						videoLinkNum = videoLinkNum - 1;
+						
+					}						
+					videoLink = videos[videoPos].links[videoLinkNum];
+					videoLoadandPlay();
+					handPos = [];
+					break;
+				default:
+					break;
+			}
+		}		
+	  }
+  }
+  else
+  {
+	  handPos = [];
   }
 }
 
-function drawHand(context, jointPoint, handColor) {
-  var HANDSIZE = 20;
-  // draw semi transparent hand cicles
-  var handData = {depthX: jointPoint.depthX, depthY: jointPoint.depthY, handColor: handColor, handSize: HANDSIZE};
-  //sendToPeer('drawHand', handData);
-  context.globalAlpha = 0.75;
-  context.beginPath();
-  context.fillStyle = handColor;
-  context.arc(jointPoint.depthX * 512, jointPoint.depthY * 424, HANDSIZE, 0, Math.PI * 2, true);
-  context.fill();
-  context.closePath();
-  context.globalAlpha = 1;
+// check to see if the hand swipes are detected using coordinates
+function checkConsist(head, num1, num2) {
+	if(((num1 > head) && (num2 > head)) || ((num1 < head) && (num2 < head)))
+	{
+		return 0;
+	}
+	else
+	{
+		if(num1 > num2)
+		{
+			return -1;
+		}
+		else
+		{
+			return 1;
+		}
+	}
 }
