@@ -86,14 +86,14 @@ var waterfall = {
 	title: "waterfall",
 	pos: 12,
 	label: ["waterfall", "waterfalls"],
-	links: ["JdlTsEoJtLA",],
+	links: ["JdlTsEoJtLA"],
 };
 
 var warren = {
 	title: "warren",
 	pos: 13,
 	label: ["warren"],
-	links: ["JdlTsEoJtLA",],
+	links: ["39cgKndnb8Y"],
 };
 
 var videos = [fuji, nyc, snow, earth, coral, sea, mountain, river, night, jungle, forrest, grass, waterfall, warren];
