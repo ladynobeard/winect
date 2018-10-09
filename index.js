@@ -22,16 +22,19 @@ var currentCamera = null;
 var sendAllBodies = false;
 var x = 0;
 var y = 0;
-var  img = null;  // Load the image
+var img = null;  // Load the image
 var X = 0.0;
 var Y = 0.0;
 var Z = 0.0;
 var sizeP = 2;
-var scaleZ =0.8;
-var scalePow = 1.2;
+var scaleZ =0.5;
+var scalePow = .7;
 var startSec = 30;
 var handPos = [];
 
+var previousScrollX = 0;
+var previousScrollY = 0;
+var previousZoom = "";
 // Setup AWS IoT
 const myWindow = require('./myWindow')
 var self = this
@@ -48,12 +51,19 @@ function init() {
 
 function updateWindowScroll(X,Y,Z)
 {
+	console.log(Z);
 	var rect = document.getElementById("player").getBoundingClientRect();
-	if(((rect.top + Math.abs(2*Y*100*1/(Z*Math.pow(scaleZ,scalePow))))*((1/(Z*Math.pow(scaleZ,scalePow)))) < -15) && ((rect.bottom + Math.abs(2*Y*100*1/(Z*Math.pow(scaleZ,scalePow)))) < playerHeight+15))
+	if(((rect.top + Math.abs(2*Y*100*1/(Z*Math.pow(scaleZ,scalePow))))*((1/(Z*Math.pow(scaleZ,scalePow)))) < -30) && (((rect.bottom + Math.abs(2*Y*100*1/(Z*Math.pow(scaleZ,scalePow))))*((1/(Z*Math.pow(scaleZ,scalePow))))) < playerHeight+30))
 	{
+		console.log(Z);
 		window.scrollTo((playerWidth-$(window).width())/2 + X*100*1/(Z*Math.pow(scaleZ,scalePow)),(playerHeight-$(window).height())/2 - Y*100*1/(Z*Math.pow(scaleZ,scalePow)));
 		document.getElementById("player").style.transform="scale("+String(1/(Z*Math.pow(scaleZ,scalePow)))+")";
+		
+		previousScrollX = (playerWidth-$(window).width())/2 + X*100*1/(Z*Math.pow(scaleZ,scalePow));
+		previousScrollY = (playerHeight-$(window).height())/2 - Y*100*1/(Z*Math.pow(scaleZ,scalePow));
+		previousZoom = "scale("+String(1/(Z*Math.pow(scaleZ,scalePow)))+")";
 	}
+
 }
 
 function onYouTubeIframeAPIReady() {
