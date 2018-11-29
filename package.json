@@ -9,12 +9,17 @@
   "author": "ladynobeard",
   "license": "MIT",
   "dependencies": {
+    "alexa-sdk": "^1.0.25",
     "async": "^2.6.1",
     "aws-iot-device-sdk": "^2.2.1",
     "electron": "^2.0.7",
     "kinect2": "^0.1.6",
+    "node-sass": "^4.10.0",
     "os": "^0.1.1",
-    "underscore": "^1.9.1",
+    "pug": "^2.0.3",
+    "sass": "^1.15.1",
+    "three": "^0.97.0",
+    "three-css3drenderer": "^1.0.1",
     "youtube-player": "^5.5.0"
   }
 }

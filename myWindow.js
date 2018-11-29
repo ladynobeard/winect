@@ -3,20 +3,23 @@ const awsIot = require('aws-iot-device-sdk');
 
 var app = {}
 var JSONpayload = {}
-app.TOPIC_TEXT = "myWindow:new-text"
+app.TOPIC_TEXT = "Winect:new-text"
 
 // Setup our AWS IoT device and receive messages
 app.setup = function() {
+  /*
+   * cert path
+   */
   app.device = awsIot.device({
-	keyPath: './certs/8216998aa0-private.key',
-	certPath: './certs/8216998aa0-certificate.key',
+   keyPath: './certs/8ac0cb41c8-private.key',
+   certPath: './certs/8ac0cb41c8-certificate.key',
 	caPath: './certs/root-CA.crt',
-	clientId: 'myWindow',
+	clientId: 'Winect',
 	host: 'a2iv64xdl7wtt6.iot.us-east-1.amazonaws.com'	  
   });
 
-  /**
-   * AWS IoT - Connecting MagicMirror as a device to our AWS IoT topics
+  /*
+   * AWS IoT - Connecting to topic
    */
   console.log("Attempt to connect to AWS ");
   app.device.on("connect", function() {
